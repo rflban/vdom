@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "declaration": true,
+    "outDir": "./dist",
+    "target": "es6",
+    "module": "es6",
+    "checkJs": false,
+    "allowJs": false,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "moduleResolution": "node",
+    "baseUrl": "."
+  }
+}
