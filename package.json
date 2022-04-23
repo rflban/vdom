@@ -1,0 +1,24 @@
+{
+  "name": "vdom",
+  "version": "1.0.0",
+  "description": "simple vdom implementation for vk frontend coursework",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rflban/vdom.git"
+  },
+  "keywords": [
+    "virtual",
+    "dom",
+    "vdom"
+  ],
+  "author": "rflban",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rflban/vdom/issues"
+  },
+  "homepage": "https://github.com/rflban/vdom#readme"
+}
