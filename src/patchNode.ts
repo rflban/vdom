@@ -143,8 +143,10 @@ function patchNode(args: {
   oldVNode: VirtualElement | StringWrapper | null;
   newVNode: VirtualElement | StringWrapper | null;
   commitChangesStack: Array<() => void>;
+  isSVG: boolean,
 }): HTMLElement | null {
-  const { parentDomNode, leftSibling, oldVNode, newVNode, commitChangesStack } = args;
+  const { parentDomNode, leftSibling, oldVNode, newVNode, commitChangesStack, isSVG: _isSVG } = args;
+  const isSVG = _isSVG || (newVNode instanceof VirtualElement) && newVNode.type === 'svg';
 
   let realDomNode: HTMLElement | null = null;
 
@@ -169,6 +171,7 @@ function patchNode(args: {
             oldVNode: oldChild,
             newVNode: newVNode.children[idx] ?? null,
             commitChangesStack,
+            isSVG,
           });
         });
         newVNode.children.slice(oldChildren.length).forEach((newChild) => {
@@ -178,6 +181,7 @@ function patchNode(args: {
             oldVNode: null,
             newVNode: newChild,
             commitChangesStack,
+            isSVG,
           });
         });
 
@@ -230,7 +234,7 @@ function patchNode(args: {
         renderedWrapper.component = component!;
         renderedWrapper.parent = newVNode.parent;
         renderedWrapper.pos = newVNode.pos;
-        (component!.props as any).vNode = renderedWrapper; 
+        (component!.props as any).vNode = renderedWrapper;
 
         if (renderedWrapper.parent != null && renderedWrapper.pos !== null) {
           renderedWrapper.parent.children[renderedWrapper.pos] = renderedWrapper;
@@ -242,6 +246,7 @@ function patchNode(args: {
           newVNode: renderedWrapper,
           oldVNode: nextOldVNode,
           commitChangesStack,
+          isSVG,
         });
       }
     } else if (oldVNode == null) {
@@ -254,7 +259,14 @@ function patchNode(args: {
         newDomNode = document.createTextNode(newVNode.data);
         (newVNode as any).domNode = newDomNode;
       } else {
-        newDomNode = document.createElement(newVNode.type as string);
+        if (isSVG) {
+          newDomNode = document.createElementNS(
+            'http://www.w3.org/2000/svg',
+            newVNode.type as string,
+          );
+        } else {
+          newDomNode = document.createElement(newVNode.type as string);
+        }
         newVNode.domNode = newDomNode as HTMLElement;
         (newDomNode as any)[HandlersAttr] = createHandlersTable();
 
@@ -281,6 +293,7 @@ function patchNode(args: {
             newVNode: childVNode,
             oldVNode: null,
             commitChangesStack,
+            isSVG,
           });
         });
       }
@@ -298,6 +311,7 @@ function patchNode(args: {
             oldVNode: null,
             newVNode,
             commitChangesStack,
+            isSVG,
           });
           newVNode.domNode = realDomNode as unknown as Text;
         } else {
@@ -316,6 +330,7 @@ function patchNode(args: {
             oldVNode: null,
             newVNode,
             commitChangesStack,
+            isSVG,
           });
         } else {
           realDomNode = oldVNode.domNode;
@@ -347,6 +362,7 @@ function patchNode(args: {
                   oldVNode: oldChild,
                   newVNode: newChild,
                   commitChangesStack,
+                  isSVG,
                 });
 
                 oldChildIdx += 1;
@@ -357,6 +373,7 @@ function patchNode(args: {
                   oldVNode: null,
                   newVNode: newChild,
                   commitChangesStack,
+                  isSVG,
                 });
               }
             });
@@ -367,6 +384,7 @@ function patchNode(args: {
                 oldVNode: oldChild,
                 newVNode: null,
                 commitChangesStack,
+                isSVG,
               });
             });
           } else {
@@ -377,6 +395,7 @@ function patchNode(args: {
                 oldVNode: oldChild,
                 newVNode: newVNode.children[idx] ?? null,
                 commitChangesStack,
+                isSVG,
               });
             });
             newVNode.children.slice(oldVNode.children.length).forEach((newChild) => {
@@ -386,6 +405,7 @@ function patchNode(args: {
                 oldVNode: null,
                 newVNode: newChild,
                 commitChangesStack,
+                isSVG,
               });
             });
           }
@@ -412,7 +432,7 @@ export default function patch(args: {
 }): void {
   const commitChangesStack: Array<() => void> = [];
 
-  patchNode({ ...args, commitChangesStack });
+  patchNode({ ...args, commitChangesStack, isSVG: false });
 
   while (commitChangesStack.length > 0) {
     commitChangesStack.pop()!();

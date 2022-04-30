@@ -11,19 +11,19 @@ export function Debounce(ms: number): Decorator {
     descriptor: PropertyDescriptor,
   ): PropertyDescriptor {
     const originalFunc = descriptor.value;
+    const timeoutIDProp = Symbol('timeoutIdProp');
 
     // eslint-disable-next-line no-param-reassign
     descriptor.value = function decorated(...args: any): void {
-      if ((decorated as any).timeoutID != null) {
-        clearTimeout(descriptor.value.timeoutID);
+      if (this[timeoutIDProp] != null) {
+        clearTimeout(this[timeoutIDProp]);
       }
 
-      (originalFunc as any).timeoutID = setTimeout((): void => {
+      this[timeoutIDProp] = setTimeout((): void => {
         originalFunc.apply(this, args);
-        (originalFunc as any).timeoutID = null;
+        this[timeoutIDProp] = null;
       }, ms);
     };
-    (originalFunc as any).timeoutID = null;
 
     return descriptor;
   };

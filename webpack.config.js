@@ -6,10 +6,13 @@ module.exports = (env = {}) => {
   return {
     mode,
     entry: './src/index.ts',
-    target: ['web', 'es6'],
     output: {
       filename: 'index.js',
       path: path.resolve(__dirname, 'dist'),
+      library: {
+        name: '@rflban/vdom',
+        type: 'umd',
+      },
     },
     module: {
       rules: [

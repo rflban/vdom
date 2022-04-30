@@ -1,6 +1,6 @@
 {
   "name": "@rflban/vdom",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "simple vdom implementation for vk frontend coursework",
   "main": "dist/index.js",
   "scripts": {

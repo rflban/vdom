@@ -4,12 +4,18 @@ import { ContextType } from './Context';
 import StringWrapper from './StringWrapper';
 import { Debounce } from './util';
 import type { IComponentProps, IComponentPropsCommon } from './IComponentProps';
-import cloneVNode from './cloneVNode';
+import cloneElement from './cloneElement';
+import Ref, { RefTypes } from './Ref';
 
 interface IComponentPropsInternal {
   parentDomNode: HTMLElement;
   leftSibling: HTMLElement;
   vNode: VirtualElement;
+}
+
+interface WithChildrenProps {
+  children?: Array<VirtualElement | StringWrapper>;
+  ref?: Ref<RefTypes>;
 }
 
 export default abstract class Component<
@@ -18,7 +24,7 @@ export default abstract class Component<
   Snapshot = any,
   ContextValueType = null,
 > {
-  public props: Props & {children?: VirtualElement};
+  public props: Props & WithChildrenProps;
 
   public node: HTMLElement | null;
 
@@ -28,18 +34,18 @@ export default abstract class Component<
 
   public context: ContextValueType;
 
-  #destructListeners: Array<() => void>;
+  private destructListeners: Array<() => void>;
 
   constructor(props: Props) {
     this.node = null;
     this.children = [];
     this.setProps(props);
-    this.#destructListeners = [];
+    this.destructListeners = [];
   }
 
   destruct(): void {
-    this.#destructListeners.forEach((listener) => listener());
-    this.#destructListeners.length = 0;
+    this.destructListeners.forEach((listener) => listener());
+    this.destructListeners.length = 0;
   }
 
   setProps(_props: Props): void {
@@ -73,13 +79,13 @@ export default abstract class Component<
       }
     }
 
-    this.props = props as Props & {children?: VirtualElement};
+    this.props = props as Props & WithChildrenProps;
   }
 
   abstract render(): VirtualElement;
 
   renderAndCopy(): VirtualElement {
-    return cloneVNode(this.render());
+    return cloneElement(this.render()) as VirtualElement;
   }
 
   didMount(): void {}
@@ -90,7 +96,7 @@ export default abstract class Component<
   willUmount(): void {}
 
   // eslint-disable-next-line no-unused-vars
-  makeSnapshot(_prevProps: Props & {children?: VirtualElement}, _prevState: State): Snapshot | null {
+  makeSnapshot(_prevProps: Props & WithChildrenProps, _prevState: State): Snapshot | null {
     return null;
   }
 
@@ -116,7 +122,7 @@ export default abstract class Component<
 
     const props = _props as Props & IComponentPropsInternal & IComponentPropsCommon & IComponentProps;
 
-    const snapshot = this.makeSnapshot(props as Props & {children?: VirtualElement}, state);
+    const snapshot = this.makeSnapshot(props as Props & WithChildrenProps, state);
 
     const rendered = this.renderAndCopy();
     const oldVNode = curProps.vNode.children[0];
