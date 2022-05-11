@@ -1,4 +1,5 @@
 export { default as render } from './render';
+export { default as unmountFromDOM } from './unmountFromDOM';
 export { default as createElement } from './createElement';
 export { default as cloneElement } from './cloneElement';
 export { default as VirtualElement } from './VirtualElement';

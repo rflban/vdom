@@ -17,7 +17,7 @@ function isAllChildrenWithKey(vnode: VirtualElement): boolean {
   });
 }
 
-function removeVNodeFromDom(oldVNode: VirtualElement | StringWrapper | null): void {
+export function removeVNodeFromDom(oldVNode: VirtualElement | StringWrapper | null): void {
   const toRemove: VirtualElement[] = [];
   const levels: number[] = [];
   let prevLevel = 0;
@@ -211,6 +211,12 @@ function patchNode(args: {
 
             commitChangesStack.push(() => component.didUpdate(snapshot));
           } else {
+            if (oldVNode.component && (parentDomNode as any).componentsContainer) {
+              (parentDomNode as any).componentsContainer.splice(
+                (parentDomNode as any).componentsContainer.indexOf(oldVNode.component),
+                1,
+              );
+            }
             removeVNodeFromDom(oldVNode);
             nextOldVNode = null;
           }
@@ -248,6 +254,13 @@ function patchNode(args: {
           commitChangesStack,
           isSVG,
         });
+
+        if (!(parentDomNode as any).componentsContainer) {
+          (parentDomNode as any).componentsContainer = [];
+        }
+        if (!componentAlreadyExists) {
+          (parentDomNode as any).componentsContainer.push(component!);
+        }
       }
     } else if (oldVNode == null) {
       // Create
