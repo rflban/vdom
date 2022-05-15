@@ -12,7 +12,7 @@ export default class VirtualElement {
   public readonly key: string | undefined;
 
   // eslint-disable-next-line no-use-before-define
-  public children: Array<VirtualElement | StringWrapper>;
+  public children: Array<VirtualElement | StringWrapper | Function>;
 
   public component: Component | null;
 
@@ -28,7 +28,7 @@ export default class VirtualElement {
   constructor(
     type: string | Function,
     props: any,
-    children: Array<VirtualElement | StringWrapper>,
+    children: Array<VirtualElement | StringWrapper | Function>,
     key?: string,
     ref?: Ref<RefTypes>,
   ) {

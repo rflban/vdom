@@ -8,8 +8,11 @@ export default function createElement(
   ...children: Array<any>
 ): VirtualElement {
   const { key, ref, ...restProps } = (props ?? {}) as unknown as { key?: string; ref?: Ref<RefTypes> };
-  const vChildren: Array<VirtualElement | StringWrapper> = children.flat().filter((child) => child).map((child) => {
+  const vChildren: Array<VirtualElement | StringWrapper | Function > = children.flat().filter((child) => child).map((child) => {
     if (child instanceof VirtualElement) {
+      return child;
+    }
+    if (typeof child === 'function') {
       return child;
     }
 

@@ -14,7 +14,7 @@ interface IComponentPropsInternal {
 }
 
 interface WithChildrenProps {
-  children?: Array<VirtualElement | StringWrapper>;
+  children?: Array<VirtualElement | StringWrapper | Function>;
   ref?: Ref<RefTypes>;
 }
 
@@ -30,7 +30,7 @@ export default abstract class Component<
 
   public state: State;
 
-  public children: Array<VirtualElement | StringWrapper>;
+  public children: Array<VirtualElement | StringWrapper | Function>;
 
   public context: ContextValueType;
 
@@ -127,6 +127,10 @@ export default abstract class Component<
     const rendered = this.renderAndCopy();
     const oldVNode = curProps.vNode.children[0];
     const { parentDomNode, leftSibling } = curProps as IComponentPropsInternal;
+
+    if (typeof oldVNode === 'function') {
+      throw 'Component oldVNode can not be function';
+    }
 
     rendered.parent = curProps.vNode;
     rendered.pos = 0;

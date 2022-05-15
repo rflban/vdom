@@ -49,9 +49,5 @@ export function Debounce(ms: number): Decorator {
  * // returns { question: 'why?' }
  */
 export const zip = (...objs: object[]): any => {
-  if (objs.length <= 0) {
-    throw new Error('Nothing to merge');
-  }
-
   return objs.reduce((acc, cur) => ({ ...cur, ...acc }), {});
 };

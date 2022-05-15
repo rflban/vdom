@@ -17,7 +17,7 @@ function isAllChildrenWithKey(vnode: VirtualElement): boolean {
   });
 }
 
-export function removeVNodeFromDom(oldVNode: VirtualElement | StringWrapper | null): void {
+export function removeVNodeFromDom(oldVNode: VirtualElement | StringWrapper | Function | null): void {
   const toRemove: VirtualElement[] = [];
   const levels: number[] = [];
   let prevLevel = 0;
@@ -25,6 +25,7 @@ export function removeVNodeFromDom(oldVNode: VirtualElement | StringWrapper | nu
   if (oldVNode instanceof VirtualElement) {
     toRemove.push(oldVNode);
     levels.push(0);
+  } else if (typeof oldVNode === 'function') {
   } else {
     oldVNode?.domNode!.remove();
   }
@@ -36,12 +37,13 @@ export function removeVNodeFromDom(oldVNode: VirtualElement | StringWrapper | nu
 
     if (prevLevel <= level) {
       for (let idx = top.children.length - 1; idx >= 0; idx -= 1) {
-        const child: VirtualElement | StringWrapper = top.children[idx];
+        const child: VirtualElement | StringWrapper | Function = top.children[idx];
 
         if (child instanceof VirtualElement) {
           isLeaf = false;
           toRemove.push(child);
           levels.push(level + 1);
+        } else if (typeof child === 'function') {
         } else {
           child.domNode!.remove();
         }
@@ -140,8 +142,8 @@ function insertAfter(parentDomNode: HTMLElement, newDomNode: Node, leftSibling: 
 function patchNode(args: {
   parentDomNode: HTMLElement;
   leftSibling: HTMLElement | null;
-  oldVNode: VirtualElement | StringWrapper | null;
-  newVNode: VirtualElement | StringWrapper | null;
+  oldVNode: VirtualElement | StringWrapper | Function | null;
+  newVNode: VirtualElement | StringWrapper | Function | null;
   commitChangesStack: Array<() => void>;
   isSVG: boolean,
 }): HTMLElement | null {
@@ -155,7 +157,7 @@ function patchNode(args: {
       // Component or Fragment
       if (newVNode.type === Fragment) {
         // Fragment
-        let oldChildren: Array<VirtualElement | StringWrapper> = [];
+        let oldChildren: Array<VirtualElement | StringWrapper | Function> = [];
         let currentLeftSibling = leftSibling;
 
         if (!(oldVNode instanceof VirtualElement) || oldVNode.type !== Fragment) {
@@ -189,7 +191,7 @@ function patchNode(args: {
       } else {
         // Component
         let component: Component;
-        let nextOldVNode: VirtualElement | StringWrapper | null = oldVNode;
+        let nextOldVNode: VirtualElement | StringWrapper | Function | null = oldVNode;
         let componentAlreadyExists = false;
 
         if (oldVNode instanceof VirtualElement && oldVNode.component != null) {
@@ -268,6 +270,10 @@ function patchNode(args: {
       let nextParentDomNode = parentDomNode;
       let newDomNode: Node;
 
+      if (typeof newVNode === 'function') {
+        throw 'Could not mount function as DOM Node';
+      }
+
       if (newVNode instanceof StringWrapper) {
         newDomNode = document.createTextNode(newVNode.data);
         (newVNode as any).domNode = newDomNode;
@@ -311,6 +317,13 @@ function patchNode(args: {
         });
       }
     } else {
+      if (typeof newVNode === 'function') {
+        throw 'Function is allowed only as component child';
+      }
+
+      if (typeof newVNode === 'function') {
+        throw 'Could not mount function as DOM Node';
+      }
       // Compare old and new
       // both are regular node or text node
       if (newVNode instanceof StringWrapper) {
@@ -333,6 +346,10 @@ function patchNode(args: {
           realDomNode = newVNode.domNode as unknown as HTMLElement;
         }
       } else {
+        if (typeof oldVNode === 'function') {
+          throw 'Old virtual node can not be Function';
+        }
+
         // Regular node
         if (oldVNode instanceof StringWrapper || oldVNode.type !== newVNode.type) {
           // replace old with new
