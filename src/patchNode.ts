@@ -99,7 +99,7 @@ function patchProp(domNode: HTMLElement, propName: string, oldVal: any, newVal: 
   }
 
   if (propName === 'style') {
-    const styleString = Object.entries(newVal)
+    const styleString = Object.entries(newVal ?? {})
       .filter(([key]) => key)
       .map(([key, value]) => `${key}: ${value};`)
       .join(' ');
