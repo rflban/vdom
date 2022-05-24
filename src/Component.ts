@@ -41,6 +41,7 @@ export default abstract class Component<
     this.children = [];
     this.setProps(props);
     this.destructListeners = [];
+    this.enqueueUpdate = this.enqueueUpdate.bind(this);
   }
 
   destruct(): void {
